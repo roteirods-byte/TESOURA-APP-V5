@@ -1,0 +1,13 @@
+:root{ --bg:#071a2b; --card:#0b2842; --txt:#ffffff; --muted:#b8c7d8; --line:#163b5b; --btn:#1d4f7a; --btn2:#2c6aa0; }
+*{ box-sizing:border-box; font-family: Arial, Helvetica, sans-serif; }
+body{ margin:0; background:var(--bg); color:var(--txt); }
+.topbar{ position:sticky; top:0; z-index:10; background:var(--card); border-bottom:1px solid var(--line); padding:10px 12px; }
+.brand{ font-weight:700; letter-spacing:1px; }
+.menu{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+.menu button{ background:var(--btn); color:var(--txt); border:1px solid var(--line); padding:8px 10px; border-radius:10px; cursor:pointer; }
+.menu button:hover{ background:var(--btn2); }
+.wrap{ padding:12px; }
+#frame{ width:100%; height: calc(100vh - 140px); border:1px solid var(--line); background:#fff; border-radius:14px; }
+@media (max-width:720px){
+  #frame{ height: calc(100vh - 190px); }
+}
