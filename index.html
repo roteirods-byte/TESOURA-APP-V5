@@ -1,51 +1,37 @@
 <!doctype html>
 <html lang="pt-br">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>TESOURA</title>
-  <link rel="stylesheet" href="app/css/ui.css?v=1"/>
+  <link rel="stylesheet" href="app/css/ui.css?v=1" />
 </head>
 <body>
-
   <div class="topbar">
     <div class="brand">
       <span class="dot"></span>
       <div>
-        <h1 id="appTitle">TESOURA</h1>
+        <h1>TESOURA</h1>
         <small>Controle do Futebol</small>
       </div>
     </div>
 
     <div class="tabs">
-      <button class="tab" data-tab="jogadores">Jogadores</button>
-      <button class="tab" data-tab="presenca_escalacao">Presença / Escalação</button>
-      <button class="tab" data-tab="controle_geral">Controle Geral</button>
-      <button class="tab" data-tab="mensalidade">Mensalidade</button>
-      <button class="tab" data-tab="caixa">Caixa</button>
-      <button class="tab" data-tab="gols">Gols</button>
+      <button class="tab">Jogadores</button>
+      <button class="tab">Presença / Escalação</button>
+      <button class="tab">Controle Geral</button>
+      <button class="tab">Mensalidade</button>
+      <button class="tab">Caixa</button>
+      <button class="tab">Gols</button>
     </div>
   </div>
 
   <div class="container">
-    <div class="section" data-section="jogadores"><div data-panel="jogadores"></div></div>
-    <div class="section" data-section="presenca_escalacao"><div data-panel="presenca_escalacao"></div></div>
-    <div class="section" data-section="controle_geral"><div data-panel="controle_geral"></div></div>
-    <div class="section" data-section="mensalidade"><div data-panel="mensalidade"></div></div>
-    <div class="section" data-section="caixa"><div data-panel="caixa"></div></div>
-    <div class="section" data-section="gols"><div data-panel="gols"></div></div>
+    <div class="card">
+      <h2>JOGADORES (placeholder)</h2>
+      <div class="hr"></div>
+      <p class="muted">Agora o layout está fixo. Próximo passo: trazer o painel oficial do V4 para cá.</p>
+    </div>
   </div>
-
-  <script src="app/core/config.js?v=1"></script>
-  <script src="app/js/auth.js?v=1"></script>
-
-  <script src="app/js/panels/jogadores.js?v=1"></script>
-  <script src="app/js/panels/presenca_escalacao.js?v=1"></script>
-  <script src="app/js/panels/controle_geral.js?v=1"></script>
-  <script src="app/js/panels/mensalidade.js?v=1"></script>
-  <script src="app/js/panels/caixa.js?v=1"></script>
-  <script src="app/js/panels/gols.js?v=1"></script>
-
-  <script src="app/js/app.js?v=1"></script>
 </body>
 </html>
