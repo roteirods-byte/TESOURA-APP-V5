@@ -17,31 +17,51 @@
     </div>
 
     <div class="tabs">
-      <button class="tab" data-tab="jogadores">Jogadores</button>
-      <button class="tab" data-tab="presenca_escalacao">Presença / Escalação</button>
-      <button class="tab" data-tab="controle_geral">Controle Geral</button>
-      <button class="tab" data-tab="mensalidade">Mensalidade</button>
-      <button class="tab" data-tab="caixa">Caixa</button>
-      <button class="tab" data-tab="gols">Gols</button>
+      <button class="tab" data-panel="jogadores">Jogadores</button>
+      <button class="tab" data-panel="presenca_escalacao">Presença / Escalação</button>
+      <button class="tab" data-panel="controle_geral">Controle Geral</button>
+      <button class="tab" data-panel="mensalidade">Mensalidade</button>
+      <button class="tab" data-panel="caixa">Caixa</button>
+      <button class="tab" data-panel="gols">Gols</button>
     </div>
   </div>
 
-  <div class="container" id="app">
-    <div class="card">
-      <h2>Carregando…</h2>
-      <div class="hr"></div>
-      <p class="muted">Aguarde.</p>
+  <div class="container">
+    <div class="card" style="padding:0; overflow:hidden;">
+      <iframe id="frame" title="TESOURA" style="width:100%; height: calc(100vh - 140px); border:0;"></iframe>
     </div>
   </div>
 
-  <!-- SEM PIN -->
-  <script>window.TESOURA_REQUIRE_PIN=false;</script>
+  <script>
+    (function () {
+      const map = {
+        jogadores: "panels/jogadores.html",
+        presenca_escalacao: "panels/presenca_escalacao.html",
+        controle_geral: "panels/controle_geral.html",
+        mensalidade: "panels/mensalidade.html",
+        caixa: "panels/caixa.html",
+        gols: "panels/gols.html",
+      };
 
-  <!-- scripts do app (já existem no repo) -->
-  <script src="app/core/config.js?v=1"></script>
-  <script src="app/js/auth.js?v=1"></script>
-  <script src="app/js/app.js?v=1"></script>
-  <script src="app/core/config.js?v=1"></script>
-  
+      const frame = document.getElementById("frame");
+      const tabs = Array.from(document.querySelectorAll(".tab"));
+
+      function setActive(key){
+        tabs.forEach(b => b.classList.toggle("active", b.dataset.panel === key));
+      }
+
+      function openPanel(key){
+        const url = map[key] || map.jogadores;
+        setActive(key);
+        frame.src = url + "?v=" + Date.now();
+        location.hash = "#" + key;
+      }
+
+      tabs.forEach(b => b.addEventListener("click", () => openPanel(b.dataset.panel)));
+
+      const start = (location.hash || "").replace("#","") || "jogadores";
+      openPanel(start);
+    })();
+  </script>
 </body>
 </html>
