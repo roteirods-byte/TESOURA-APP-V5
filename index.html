@@ -17,21 +17,29 @@
     </div>
 
     <div class="tabs">
-      <button class="tab">Jogadores</button>
-      <button class="tab">Presença / Escalação</button>
-      <button class="tab">Controle Geral</button>
-      <button class="tab">Mensalidade</button>
-      <button class="tab">Caixa</button>
-      <button class="tab">Gols</button>
+      <button class="tab" data-tab="jogadores">Jogadores</button>
+      <button class="tab" data-tab="presenca_escalacao">Presença / Escalação</button>
+      <button class="tab" data-tab="controle_geral">Controle Geral</button>
+      <button class="tab" data-tab="mensalidade">Mensalidade</button>
+      <button class="tab" data-tab="caixa">Caixa</button>
+      <button class="tab" data-tab="gols">Gols</button>
     </div>
   </div>
 
-  <div class="container">
+  <div class="container" id="app">
     <div class="card">
-      <h2>JOGADORES (placeholder)</h2>
+      <h2>Carregando…</h2>
       <div class="hr"></div>
-      <p class="muted">Agora o layout está fixo. Próximo passo: trazer o painel oficial do V4 para cá.</p>
+      <p class="muted">Aguarde.</p>
     </div>
   </div>
+
+  <!-- SEM PIN -->
+  <script>window.TESOURA_REQUIRE_PIN=false;</script>
+
+  <!-- scripts do app (já existem no repo) -->
+  <script src="app/core/config.js?v=1"></script>
+  <script src="app/js/auth.js?v=1"></script>
+  <script src="app/js/app.js?v=1"></script>
 </body>
 </html>
