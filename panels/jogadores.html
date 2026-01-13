@@ -1,12 +1,210 @@
 <!doctype html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Jogadores</title>
+  <title>TESOURA - Jogadores</title>
+
+  <!-- usa o visual do V5 -->
+  <link rel="stylesheet" href="../app/css/ui.css?v=1" />
+
+  <style>
+    :root{
+      --bg:#020617;
+      --panel:#0b1222;
+      --panel2:#0f172a;
+      --line:#1f2937;
+      --txt:#e5e7eb;
+      --muted:#9ca3af;
+      --orange:#f97316;
+      --green:#2ecc71;
+      --red:#ef4444;
+      --blue:#60a5fa;
+    }
+    body{ margin:0; background:var(--bg); color:var(--txt); }
+    .wrap{ max-width:1600px; margin:0 auto; padding:16px; }
+    .cardx{
+      background: linear-gradient(180deg, #0b1120 0%, #030712 100%);
+      border: 1px solid #0f172a;
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.45);
+      margin-bottom: 14px;
+    }
+    h2{ margin:0 0 10px; font-weight:900; letter-spacing:.5px; text-transform:uppercase; color:var(--orange); }
+    label{ font-size:12px; font-weight:800; }
+    input{
+      width:100%; box-sizing:border-box;
+      padding:10px 12px; border-radius:10px;
+      border:1px solid #111827; outline:none;
+      background:#0b1222; color:var(--txt);
+      margin-top:4px;
+    }
+    input::placeholder{ color:#556; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap:8px 12px;
+    }
+    @media (max-width: 900px){
+      .grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+    .btn{
+      border:none; padding:10px 14px; border-radius:10px;
+      cursor:pointer; font-weight:900; letter-spacing:.3px;
+      text-transform:uppercase; box-shadow:0 6px 16px rgba(0,0,0,.35);
+      background:#111827; color:var(--txt);
+    }
+    .btn:hover{ filter:brightness(1.06); }
+    .btn-green{ background:var(--green); color:#001a2e; }
+    .btn-orange{ background:var(--orange); color:#001a2e; }
+    .btn-blue{ background:var(--blue); color:#001a2e; }
+    .btn-red{ background:var(--red); color:#001a2e; }
+
+    table{ width:100%; border-collapse:collapse; margin-top:10px; table-layout:fixed; }
+    th, td{
+      border:1px solid #0f172a;
+      padding:8px 10px;
+      font-size:12px;
+      text-align:center;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    th{
+      background: var(--orange);
+      color:#0f172a;
+      position: sticky;
+      top:0;
+      z-index:1;
+    }
+    tr:nth-child(even){ background:#0b1120; }
+    tr:nth-child(odd){ background:#020617; }
+
+    /* larguras (sem barra horizontal) */
+    #tbl th:nth-child(1),  #tbl td:nth-child(1){width:40px;}   /* ORDEM */
+    #tbl th:nth-child(2),  #tbl td:nth-child(2){width:55px;}   /* CAMISA */
+    #tbl th:nth-child(3),  #tbl td:nth-child(3){width:90px;}   /* APELIDO */
+    #tbl th:nth-child(4),  #tbl td:nth-child(4){width:150px;}  /* NOME */
+    #tbl th:nth-child(5),  #tbl td:nth-child(5){width:110px;}  /* DATA */
+    #tbl th:nth-child(6),  #tbl td:nth-child(6){width:55px;}   /* IDADE */
+    #tbl th:nth-child(7),  #tbl td:nth-child(7){width:125px;}  /* CELULAR */
+    #tbl th:nth-child(8),  #tbl td:nth-child(8){width:60px;}   /* POS */
+    #tbl th:nth-child(9),  #tbl td:nth-child(9){width:45px;}   /* HAB */
+    #tbl th:nth-child(10), #tbl td:nth-child(10){width:45px;}  /* VEL */
+    #tbl th:nth-child(11), #tbl td:nth-child(11){width:45px;}  /* MOV */
+    #tbl th:nth-child(12), #tbl td:nth-child(12){width:55px;}  /* PONTOS */
+    #tbl th:nth-child(13), #tbl td:nth-child(13){width:70px;}  /* EDITAR */
+    #tbl th:nth-child(14), #tbl td:nth-child(14){width:70px;}  /* EXCLUIR */
+
+    #status{ margin-top:6px; font-size:12px; color:var(--muted); font-weight:700; }
+
+    .miniTitle{ color:#cfd6ff; font-weight:900; margin:6px 0 10px; }
+    .birthdayBox{ margin-top:10px; }
+
+    /* PRINT */
+    #printArea{ display:none; }
+    @media print{
+      body{ background:#fff !important; }
+      body *{ visibility:hidden !important; }
+      #printArea, #printArea *{ visibility:visible !important; }
+      #printArea{
+        display:block !important;
+        position:fixed; left:0; top:0; width:100%;
+        background:#fff !important; color:#000 !important;
+        padding:16px;
+      }
+      #printArea table{ width:100%; border-collapse:collapse; table-layout:auto; }
+      #printArea th, #printArea td{ border:1px solid #999; padding:4px; font-size:10px; text-align:left; }
+      #printArea th{ background:#eee !important; }
+    }
+  </style>
 </head>
-<body style="margin:0;padding:16px;font-family:Arial;background:#ffffff;">
-  <h2>JOGADORES (placeholder)</h2>
-  <p>Este painel será substituído pelo arquivo oficial depois.</p>
-</body>
-</html>
+<body>
+  <div class="wrap">
+
+    <div class="cardx" id="editPanel">
+      <h2>Cadastrar / Editar Jogador</h2>
+
+      <div class="grid">
+        <div>
+          <label>NÚMERO DA CAMISA:</label>
+          <input id="camisa" type="number" />
+        </div>
+        <div>
+          <label>NOME COMPLETO:</label>
+          <input id="nome" type="text" />
+        </div>
+        <div>
+          <label>APELIDO (ÚNICO):</label>
+          <input id="apelido" type="text" />
+        </div>
+        <div>
+          <label>DATA DE NASCIMENTO:</label>
+          <input id="data_nasc" type="date" />
+        </div>
+
+        <div>
+          <label>CELULAR (WHATSAPP):</label>
+          <input id="celular" type="text" />
+        </div>
+        <div>
+          <label>POSIÇÃO (Z/L/M/A):</label>
+          <input id="posicao" type="text" maxlength="1" />
+        </div>
+        <div>
+          <label>HABILIDADE (1–5):</label>
+          <input id="hab" type="number" min="1" max="5" />
+        </div>
+        <div>
+          <label>VELOCIDADE (1–2, N_3_*):</label>
+          <input id="vel" type="number" />
+        </div>
+
+        <div>
+          <label>MOVIMENTAÇÃO (1–2, N_3_*):</label>
+          <input id="mov" type="number" />
+        </div>
+        <div>
+          <label>PONTOS:</label>
+          <input id="pontos" type="number" disabled placeholder="HAB + VEL + MOV" />
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:12px;">
+        <button class="btn btn-green" id="btnSalvar">SALVAR JOGADOR</button>
+        <button class="btn btn-orange" id="btnCancelar">CANCELAR EDIÇÃO</button>
+      </div>
+
+      <div id="status"></div>
+    </div>
+
+    <div class="cardx">
+      <h2>Lista de Jogadores</h2>
+
+      <div class="miniTitle">ZAGUEIRO = Z &nbsp;&nbsp; LATERAL = L &nbsp;&nbsp; MEIO = M &nbsp;&nbsp; ATAQUE = A</div>
+
+      <div class="birthdayBox cardx" style="margin:0; padding:12px;">
+        <h2 style="margin:0 0 8px 0; font-size:16px;">Aniversariantes do Mês</h2>
+        <div id="birthdayHint" class="miniTitle" style="margin:0 0 8px 0;">Carregando...</div>
+        <table id="birthdayTable">
+          <thead>
+            <tr>
+              <th style="width:60%;">APELIDO</th>
+              <th style="width:20%;">DATA</th>
+              <th style="width:20%;">IDADE</th>
+            </tr>
+          </thead>
+          <tbody id="birthdayBody">
+            <tr><td colspan="3">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="row" style="margin-top:10px;">
+        <button class="btn btn-blue" id="btnPdf">BAIXAR PDF (ATUAL)</button>
+        <span class="miniTitle" id="totalJogadores" style="margin:0;">TOTAL DE
