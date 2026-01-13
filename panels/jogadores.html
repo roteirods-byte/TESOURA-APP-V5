@@ -207,4 +207,366 @@
 
       <div class="row" style="margin-top:10px;">
         <button class="btn btn-blue" id="btnPdf">BAIXAR PDF (ATUAL)</button>
-        <span class="miniTitle" id="totalJogadores" style="margin:0;">TOTAL DE
+        <span class="miniTitle" id="totalJogadores" style="margin:0;">TOTAL DE JOGADORES: 0</span>
+      </div>
+
+      <p style="font-size:12px; margin:10px 0 0; color:#cfd6ff; font-weight:800;">
+        ORDEM ALFABÉTICA POR APELIDO. COLUNA IDADE É CALCULADA AUTOMÁTICA.
+        (Dados ficam salvos neste navegador.)
+      </p>
+
+      <table id="tbl">
+        <thead>
+          <tr>
+            <th>ORDEM</th>
+            <th>CAMISA</th>
+            <th>APELIDO</th>
+            <th>NOME</th>
+            <th>DATA NASC.</th>
+            <th>IDADE</th>
+            <th>CELULAR</th>
+            <th>POSIÇÃO</th>
+            <th>HAB</th>
+            <th>VEL</th>
+            <th>MOV</th>
+            <th>PONTOS</th>
+            <th>EDITAR</th>
+            <th>EXCLUIR</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <div id="printArea"></div>
+  </div>
+
+  <script>
+    // ======= DADOS (SEM SUPABASE) =======
+    const STORE_KEY = "TESOURA_JOGADORES_V5";
+
+    function loadPlayers(){
+      try{
+        const raw = localStorage.getItem(STORE_KEY);
+        const arr = raw ? JSON.parse(raw) : [];
+        return Array.isArray(arr) ? arr : [];
+      }catch(e){
+        return [];
+      }
+    }
+    function savePlayers(arr){
+      localStorage.setItem(STORE_KEY, JSON.stringify(arr || []));
+    }
+
+    // ======= UTILS =======
+    const $ = (id)=>document.getElementById(id);
+
+    function upper(s){ return String(s||"").trim().toUpperCase(); }
+
+    function calcAge(iso){
+      if(!iso) return "";
+      const d = new Date(String(iso).slice(0,10));
+      if(isNaN(d.getTime())) return "";
+      const now = new Date();
+      let age = now.getFullYear() - d.getFullYear();
+      const m = now.getMonth() - d.getMonth();
+      if(m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+      if(age < 0 || age > 120) return "";
+      return age;
+    }
+
+    function pontos(h,v,m){
+      const a = Number(h||0), b = Number(v||0), c = Number(m||0);
+      const s = a+b+c;
+      return s ? s : "";
+    }
+
+    function parseBirth(iso){
+      if(!iso) return null;
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
+      const [y,m,d] = iso.split("-").map(Number);
+      return {y,m,d};
+    }
+
+    // ======= ELEMENTOS =======
+    const camisa = $("camisa");
+    const nome = $("nome");
+    const apelido = $("apelido");
+    const data_nasc = $("data_nasc");
+    const celular = $("celular");
+    const posicao = $("posicao");
+    const hab = $("hab");
+    const vel = $("vel");
+    const mov = $("mov");
+    const pontosEl = $("pontos");
+
+    const btnSalvar = $("btnSalvar");
+    const btnCancelar = $("btnCancelar");
+    const statusEl = $("status");
+    const tbody = $("tbody");
+    const totalEl = $("totalJogadores");
+
+    const bHint = $("birthdayHint");
+    const bBody = $("birthdayBody");
+
+    const printArea = $("printArea");
+    const btnPdf = $("btnPdf");
+
+    let editKey = null; // id interno
+
+    function setStatus(msg){
+      statusEl.textContent = msg || "";
+    }
+
+    function clearForm(){
+      editKey = null;
+      camisa.value = "";
+      nome.value = "";
+      apelido.value = "";
+      data_nasc.value = "";
+      celular.value = "";
+      posicao.value = "";
+      hab.value = "";
+      vel.value = "";
+      mov.value = "";
+      pontosEl.value = "";
+      btnSalvar.textContent = "SALVAR JOGADOR";
+      setStatus("");
+    }
+
+    function updatePontos(){
+      pontosEl.value = pontos(hab.value, vel.value, mov.value);
+    }
+    hab.addEventListener("input", updatePontos);
+    vel.addEventListener("input", updatePontos);
+    mov.addEventListener("input", updatePontos);
+
+    function renderBirthdays(players){
+      const now = new Date();
+      const mes = now.getMonth()+1;
+
+      const list = (players||[])
+        .map(p=>{
+          const bd = parseBirth(p.data_nasc);
+          if(!bd) return null;
+          if(bd.m !== mes) return null;
+          return {
+            apelido: upper(p.apelido),
+            y: bd.y, m: bd.m, d: bd.d
+          };
+        })
+        .filter(Boolean)
+        .sort((a,b)=>a.d-b.d);
+
+      bBody.innerHTML = "";
+
+      if(list.length === 0){
+        bHint.textContent = "Total: 0";
+        bBody.innerHTML = `<tr><td colspan="3">Nenhum aniversariante neste mês.</td></tr>`;
+        return;
+      }
+
+      bHint.textContent = "Total: " + list.length;
+
+      bBody.innerHTML = list.map(a=>{
+        const dd = String(a.d).padStart(2,"0");
+        const mm = String(a.m).padStart(2,"0");
+        const idade = calcAge(`${a.y}-${String(a.m).padStart(2,"0")}-${String(a.d).padStart(2,"0")}`);
+        return `<tr>
+          <td title="${a.apelido}">${a.apelido}</td>
+          <td>${dd}/${mm}</td>
+          <td>${idade}</td>
+        </tr>`;
+      }).join("");
+    }
+
+    function renderTable(players){
+      tbody.innerHTML = "";
+      const sorted = [...(players||[])].sort((a,b)=> upper(a.apelido).localeCompare(upper(b.apelido)));
+
+      sorted.forEach((p, idx)=>{
+        const tr = document.createElement("tr");
+        const idade = calcAge(p.data_nasc);
+
+        const cols = [
+          idx+1,
+          p.camisa ?? "",
+          upper(p.apelido),
+          upper(p.nome),
+          p.data_nasc ?? "",
+          idade,
+          p.celular ?? "",
+          upper(p.posicao),
+          p.hab ?? "",
+          p.vel ?? "",
+          p.mov ?? "",
+          p.pontos ?? ""
+        ];
+
+        cols.forEach(v=>{
+          const td = document.createElement("td");
+          td.textContent = v ?? "";
+          tr.appendChild(td);
+        });
+
+        // EDITAR
+        const tdE = document.createElement("td");
+        const bE = document.createElement("button");
+        bE.className = "btn";
+        bE.style.padding = "6px 10px";
+        bE.style.fontSize = "11px";
+        bE.textContent = "EDITAR";
+        bE.addEventListener("click", ()=>{
+          editKey = p.id;
+          camisa.value = p.camisa ?? "";
+          nome.value = p.nome ?? "";
+          apelido.value = upper(p.apelido);
+          data_nasc.value = p.data_nasc ?? "";
+          celular.value = p.celular ?? "";
+          posicao.value = upper(p.posicao).slice(0,1);
+          hab.value = p.hab ?? "";
+          vel.value = p.vel ?? "";
+          mov.value = p.mov ?? "";
+          pontosEl.value = p.pontos ?? "";
+          btnSalvar.textContent = "SALVAR ALTERAÇÃO";
+          setStatus("Editando: " + upper(p.apelido));
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+        tdE.appendChild(bE);
+        tr.appendChild(tdE);
+
+        // EXCLUIR
+        const tdX = document.createElement("td");
+        const bX = document.createElement("button");
+        bX.className = "btn btn-red";
+        bX.style.padding = "6px 10px";
+        bX.style.fontSize = "11px";
+        bX.textContent = "EXCLUIR";
+        bX.addEventListener("click", ()=>{
+          if(!confirm("Excluir este jogador?")) return;
+          const all = loadPlayers().filter(x=>x.id !== p.id);
+          savePlayers(all);
+          refresh();
+          setStatus("Jogador excluído.");
+        });
+        tdX.appendChild(bX);
+        tr.appendChild(tdX);
+
+        tbody.appendChild(tr);
+      });
+
+      totalEl.textContent = "TOTAL DE JOGADORES: " + sorted.length;
+      renderBirthdays(sorted);
+    }
+
+    function refresh(){
+      const players = loadPlayers();
+      renderTable(players);
+    }
+
+    function validatePos(pos){
+      if(!pos) return "";
+      let p = upper(pos).slice(0,1);
+      if(p === "D") p = "Z";
+      if(p && !["Z","L","M","A"].includes(p)) return null;
+      return p;
+    }
+
+    btnSalvar.addEventListener("click", ()=>{
+      const all = loadPlayers();
+
+      const ap = upper(apelido.value);
+      if(!ap){
+        setStatus("APELIDO é obrigatório.");
+        return;
+      }
+
+      // apelido único
+      const exists = all.some(p=> upper(p.apelido) === ap && p.id !== editKey);
+      if(exists){
+        setStatus("APELIDO já existe. Escolha outro.");
+        return;
+      }
+
+      const pos = validatePos(posicao.value);
+      if(pos === null){
+        setStatus("POSIÇÃO inválida. Use: Z, L, M ou A.");
+        return;
+      }
+
+      const payload = {
+        id: editKey || ("J" + Date.now()),
+        camisa: camisa.value ? Number(camisa.value) : "",
+        nome: upper(nome.value),
+        apelido: ap,
+        data_nasc: data_nasc.value || "",
+        celular: String(celular.value||"").trim(),
+        posicao: pos || "",
+        hab: hab.value ? Number(hab.value) : "",
+        vel: vel.value ? Number(vel.value) : "",
+        mov: mov.value ? Number(mov.value) : "",
+      };
+      payload.pontos = pontos(payload.hab, payload.vel, payload.mov);
+
+      if(editKey){
+        const i = all.findIndex(p=>p.id === editKey);
+        if(i >= 0) all[i] = payload;
+      }else{
+        all.push(payload);
+      }
+
+      savePlayers(all);
+      refresh();
+      clearForm();
+      setStatus("Jogador salvo com sucesso.");
+    });
+
+    btnCancelar.addEventListener("click", clearForm);
+
+    btnPdf.addEventListener("click", ()=>{
+      const players = loadPlayers().sort((a,b)=> upper(a.apelido).localeCompare(upper(b.apelido)));
+      const stamp = new Date().toLocaleString("pt-BR");
+
+      printArea.innerHTML = `
+        <div style="margin-bottom:10px;">
+          <div style="font-size:12px;color:#111;">${stamp}</div>
+          <h1 style="margin:0;font-size:18px;">JOGADORES - LISTA ATUAL</h1>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ORDEM</th><th>CAMISA</th><th>APELIDO</th><th>NOME</th><th>DATA NASC.</th><th>IDADE</th>
+              <th>CELULAR</th><th>POS</th><th>HAB</th><th>VEL</th><th>MOV</th><th>PONTOS</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${players.map((p,i)=>{
+              const idade = calcAge(p.data_nasc);
+              return `<tr>
+                <td>${i+1}</td>
+                <td>${p.camisa ?? ""}</td>
+                <td>${upper(p.apelido)}</td>
+                <td>${upper(p.nome)}</td>
+                <td>${p.data_nasc ?? ""}</td>
+                <td>${idade}</td>
+                <td>${p.celular ?? ""}</td>
+                <td>${upper(p.posicao)}</td>
+                <td>${p.hab ?? ""}</td>
+                <td>${p.vel ?? ""}</td>
+                <td>${p.mov ?? ""}</td>
+                <td>${p.pontos ?? ""}</td>
+              </tr>`;
+            }).join("")}
+          </tbody>
+        </table>
+      `;
+      window.print();
+      setTimeout(()=>{ printArea.innerHTML=""; }, 500);
+    });
+
+    // iniciar
+    refresh();
+    updatePontos();
+  </script>
+</body>
+</html>
