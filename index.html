@@ -4,8 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>TESOURA</title>
-  <link rel="stylesheet" href="app/css/ui.css?v=1" />
+
+  <!-- CSS (com versão para não ficar em cache) -->
+  <link rel="stylesheet" href="app/css/ui.css?v=V5_20260113C" />
 </head>
+
 <body>
   <div class="topbar">
     <div class="brand">
@@ -13,6 +16,9 @@
       <div>
         <h1>TESOURA</h1>
         <small>Controle do Futebol</small>
+      </div>
+      <div style="margin-left:auto">
+        <span id="badge" class="badge">V5</span>
       </div>
     </div>
 
@@ -27,13 +33,17 @@
   </div>
 
   <div class="container">
+    <div id="info" class="muted" style="padding:8px 2px;"></div>
+
     <div class="card" style="padding:0; overflow:hidden;">
-      <iframe id="frame" title="TESOURA" style="width:100%; height: calc(100vh - 140px); border:0;"></iframe>
+      <iframe id="frame" title="TESOURA"
+        style="width:100%; height: calc(100vh - 170px); border:0;"></iframe>
     </div>
   </div>
 
   <script>
     (function () {
+      // Mapa ÚNICO do V5 (somente /panels)
       const map = {
         jogadores: "panels/jogadores.html",
         presenca_escalacao: "panels/presenca_escalacao.html",
@@ -45,6 +55,7 @@
 
       const frame = document.getElementById("frame");
       const tabs = Array.from(document.querySelectorAll(".tab"));
+      const info = document.getElementById("info");
 
       function setActive(key){
         tabs.forEach(b => b.classList.toggle("active", b.dataset.panel === key));
@@ -53,6 +64,11 @@
       function openPanel(key){
         const url = map[key] || map.jogadores;
         setActive(key);
+
+        // Mostra QUAL arquivo abriu (para acabar o mistério)
+        const short = String(url).split("/").pop();
+        info.textContent = "ARQUIVO: " + short + " | BUILD: V5_2026-01-13C";
+
         frame.src = url + "?v=" + Date.now();
         location.hash = "#" + key;
       }
