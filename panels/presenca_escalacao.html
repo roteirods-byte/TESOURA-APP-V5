@@ -1,12 +1,573 @@
 <!doctype html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Jogadores</title>
+  <title>TESOURA - Presença / Escalação</title>
+
+  <!-- visual do V5 -->
+  <link rel="stylesheet" href="../app/css/ui.css?v=1" />
+
+  <style>
+    :root{
+      --bg:#020617;
+      --panel:#0b1222;
+      --panel2:#0f172a;
+      --line:#1f2937;
+      --txt:#e5e7eb;
+      --muted:#9ca3af;
+      --orange:#f97316;
+      --green:#2ecc71;
+      --red:#ef4444;
+      --blue:#60a5fa;
+    }
+    body{ margin:0; background:var(--bg); color:var(--txt); }
+    .wrap{ max-width:1600px; margin:0 auto; padding:16px; }
+    .cardx{
+      background: linear-gradient(180deg, #0b1120 0%, #030712 100%);
+      border: 1px solid #0f172a;
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.45);
+      margin-bottom: 14px;
+    }
+    h2{
+      margin:0 0 10px;
+      font-weight:900;
+      letter-spacing:.5px;
+      text-transform:uppercase;
+      color:var(--orange);
+    }
+    .topTitle{
+      text-align:center;
+      font-weight:900;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      margin: 6px 0 14px;
+    }
+
+    .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
+    @media (max-width: 1100px){ .grid2{ grid-template-columns:1fr; } }
+
+    table{ width:100%; border-collapse:collapse; table-layout:fixed; }
+    th, td{
+      border:1px solid #0f172a;
+      padding:8px 10px;
+      font-size:12px;
+      text-align:center;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    th{ background:var(--orange); color:#0f172a; position:sticky; top:0; z-index:1; }
+    tr:nth-child(even){ background:#0b1120; }
+    tr:nth-child(odd){ background:#020617; }
+
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .btn{
+      border:none; padding:10px 14px; border-radius:10px;
+      cursor:pointer; font-weight:900; letter-spacing:.3px;
+      text-transform:uppercase; box-shadow:0 6px 16px rgba(0,0,0,.35);
+      background:#111827; color:var(--txt);
+    }
+    .btn:hover{ filter:brightness(1.06); }
+    .btn-green{ background:var(--green); color:#001a2e; }
+    .btn-orange{ background:var(--orange); color:#001a2e; }
+    .btn-blue{ background:var(--blue); color:#001a2e; }
+    .btn-red{ background:var(--red); color:#001a2e; }
+
+    .mini{ font-size:12px; font-weight:800; color:#cfd6ff; }
+    .muted{ color:var(--muted); font-weight:700; font-size:12px; }
+    input, select{
+      background:#0b1222; color:var(--txt);
+      border:1px solid #111827; border-radius:10px;
+      padding:10px 12px;
+      font-weight:800;
+      outline:none;
+    }
+
+    /* larguras da tabela de jogadores */
+    #tblPlayers th:nth-child(1), #tblPlayers td:nth-child(1){ width:70px; }  /* ID */
+    #tblPlayers th:nth-child(2), #tblPlayers td:nth-child(2){ width:auto; }  /* APELIDO */
+    #tblPlayers th:nth-child(3), #tblPlayers td:nth-child(3){ width:140px; } /* CHEGOU */
+
+    /* larguras presença hoje */
+    #tblHoje th:nth-child(1), #tblHoje td:nth-child(1){ width:60px; }  /* ID */
+    #tblHoje th:nth-child(2), #tblHoje td:nth-child(2){ width:70px; }  /* ORDEM */
+    #tblHoje th:nth-child(3), #tblHoje td:nth-child(3){ width:auto; }  /* APELIDO */
+    #tblHoje th:nth-child(4), #tblHoje td:nth-child(4){ width:80px; }  /* HORA */
+    #tblHoje th:nth-child(5), #tblHoje td:nth-child(5){ width:120px; } /* OBS */
+    #tblHoje th:nth-child(6), #tblHoje td:nth-child(6){ width:120px; } /* NÃO VAI JOGAR */
+    #tblHoje th:nth-child(7), #tblHoje td:nth-child(7){ width:90px; }  /* EXCLUIR */
+
+    /* escalacao */
+    .gridEsc{ display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-top:14px; }
+    @media (max-width: 1100px){ .gridEsc{ grid-template-columns:1fr; } }
+    .escHeader{ display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+    .escTitle{ font-weight:900; color:var(--orange); text-transform:uppercase; }
+    .teamTag{ font-weight:900; text-transform:uppercase; }
+    .tagYellow{ color:#fbbf24; }
+    .tagBlue{ color:#60a5fa; }
+
+    #status{ margin-top:6px; font-size:12px; color:var(--muted); font-weight:700; }
+
+    /* PRINT */
+    #printArea{ display:none; }
+    @media print{
+      body{ background:#fff !important; }
+      body *{ visibility:hidden !important; }
+      #printArea, #printArea *{ visibility:visible !important; }
+      #printArea{
+        display:block !important;
+        position:fixed; left:0; top:0; width:100%;
+        background:#fff !important; color:#000 !important;
+        padding:16px;
+      }
+      #printArea table{ width:100%; border-collapse:collapse; table-layout:auto; }
+      #printArea th, #printArea td{ border:1px solid #999; padding:4px; font-size:10px; text-align:left; }
+      #printArea th{ background:#eee !important; }
+    }
+  </style>
 </head>
-<body style="margin:0;padding:16px;font-family:Arial;background:#ffffff;">
-  <h2>JOGADORES (placeholder)</h2>
-  <p>Este painel será substituído pelo arquivo oficial depois.</p>
+<body>
+  <div class="wrap">
+
+    <div class="topTitle">TESOURA - PRESENÇA / ESCALAÇÃO</div>
+
+    <div class="grid2">
+      <!-- JOGADORES -->
+      <div class="cardx">
+        <h2>Jogadores (todos)</h2>
+        <div class="muted" style="margin-bottom:10px;">
+          Clique em <b>CHEGOU AGORA</b> quando o jogador chegar.
+          <br/>Base vem do painel <b>JOGADORES</b> (salva neste navegador).
+        </div>
+
+        <table id="tblPlayers">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>APELIDO</th>
+              <th>CHEGOU AGORA</th>
+            </tr>
+          </thead>
+          <tbody id="playersBody"></tbody>
+        </table>
+      </div>
+
+      <!-- PRESENÇA HOJE -->
+      <div class="cardx">
+        <h2>Presença hoje</h2>
+
+        <div class="row" style="justify-content:space-between; margin-bottom:10px;">
+          <div class="mini">Presentes hoje: <span id="countHoje">0</span></div>
+          <div class="mini">Horário de corte: <span id="corte">06:15</span></div>
+        </div>
+
+        <div class="row" style="margin-bottom:10px;">
+          <button class="btn btn-red" id="btnLimpar">LIMPAR HOJE</button>
+          <button class="btn btn-green" id="btnEscalar1">ESCALAR 1º TEMPO</button>
+          <button class="btn btn-orange" id="btnDesfazer1">DESFAZER 1º TEMPO</button>
+          <button class="btn btn-blue" id="btnPdfPresenca">BAIXAR PRESENÇA</button>
+        </div>
+
+        <table id="tblHoje">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>ORDEM</th>
+              <th>APELIDO</th>
+              <th>HORA</th>
+              <th>OBS</th>
+              <th>NÃO VAI JOGAR</th>
+              <th>EXCLUIR</th>
+            </tr>
+          </thead>
+          <tbody id="hojeBody"></tbody>
+        </table>
+
+        <div id="status"></div>
+      </div>
+    </div>
+
+    <!-- ESCALAÇÃO -->
+    <div class="cardx">
+      <h2>Escalação do jogo</h2>
+
+      <div class="row" style="justify-content:space-between;">
+        <div class="mini">1º tempo — jogo das 06:40 às 07:40</div>
+        <div class="mini">2º tempo — jogo das 08:00 às 09:00</div>
+      </div>
+
+      <div class="row" style="margin-top:10px;">
+        <button class="btn btn-green" id="btnEscalar2">ESCALAR 2º TEMPO</button>
+        <button class="btn btn-orange" id="btnDesfazer2">DESFAZER 2º TEMPO</button>
+        <button class="btn btn-blue" id="btnPdf1">BAIXAR 1º TEMPO</button>
+        <button class="btn btn-blue" id="btnPdf2">BAIXAR 2º TEMPO</button>
+        <button class="btn btn-orange" id="btnSalvar">SALVAR</button>
+      </div>
+
+      <div class="gridEsc">
+        <div class="cardx" style="margin:0;">
+          <div class="escHeader">
+            <div class="escTitle">1º tempo</div>
+            <div class="mini">Prioridade: corte 06:15</div>
+          </div>
+
+          <div class="row" style="margin-top:8px;">
+            <div class="teamTag tagYellow">AMARELO</div>
+            <div style="flex:1;"></div>
+            <div class="teamTag tagBlue">AZUL</div>
+          </div>
+
+          <table id="tbl1">
+            <thead>
+              <tr>
+                <th style="width:60px;">ID</th>
+                <th style="width:60px;">POS</th>
+                <th>AMARELO</th>
+                <th style="width:60px;">SAIU</th>
+                <th>AZUL</th>
+                <th style="width:60px;">SAIU</th>
+              </tr>
+            </thead>
+            <tbody id="t1"></tbody>
+          </table>
+        </div>
+
+        <div class="cardx" style="margin:0;">
+          <div class="escHeader">
+            <div class="escTitle">2º tempo</div>
+            <div class="mini">Prioridade: quem não jogou</div>
+          </div>
+
+          <div class="row" style="margin-top:8px;">
+            <div class="teamTag tagYellow">AMARELO</div>
+            <div style="flex:1;"></div>
+            <div class="teamTag tagBlue">AZUL</div>
+          </div>
+
+          <table id="tbl2">
+            <thead>
+              <tr>
+                <th style="width:60px;">ID</th>
+                <th style="width:60px;">POS</th>
+                <th>AMARELO</th>
+                <th style="width:60px;">SAIU</th>
+                <th>AZUL</th>
+                <th style="width:60px;">SAIU</th>
+              </tr>
+            </thead>
+            <tbody id="t2"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="muted" style="margin-top:10px;">
+        Observação: este painel está pronto para receber as regras completas depois.
+        Agora ele está focado em <b>estrutura</b> e <b>visual</b> iguais ao app.
+      </div>
+    </div>
+
+    <div id="printArea"></div>
+  </div>
+
+  <script>
+    // =========================
+    // BASE DE JOGADORES (vem do painel Jogadores V5)
+    // =========================
+    const STORE_JOGADORES = "TESOURA_JOGADORES_V5";
+
+    // Presença / Escalação (hoje)
+    const STORE_PRESENCA_HOJE = "TESOURA_PRESENCA_HOJE";
+    const STORE_ESC_1 = "TESOURA_ESCALACAO_1T";
+    const STORE_ESC_2 = "TESOURA_ESCALACAO_2T";
+
+    const $ = (id)=>document.getElementById(id);
+    const upper = (s)=>String(s||"").trim().toUpperCase();
+
+    function loadPlayers(){
+      try{
+        const raw = localStorage.getItem(STORE_JOGADORES);
+        const arr = raw ? JSON.parse(raw) : [];
+        return Array.isArray(arr) ? arr : [];
+      }catch(e){ return []; }
+    }
+
+    function nowHHMM(){
+      const d = new Date();
+      const pad=(n)=>String(n).padStart(2,"0");
+      return pad(d.getHours()) + ":" + pad(d.getMinutes());
+    }
+
+    function loadJSON(key, fallback){
+      try{
+        const raw = localStorage.getItem(key);
+        const v = raw ? JSON.parse(raw) : fallback;
+        return v ?? fallback;
+      }catch(e){ return fallback; }
+    }
+    function saveJSON(key, v){
+      localStorage.setItem(key, JSON.stringify(v));
+    }
+
+    // =========================
+    // PRESENÇA HOJE
+    // =========================
+    function getHoje(){
+      return loadJSON(STORE_PRESENCA_HOJE, []);
+    }
+    function setHoje(arr){
+      saveJSON(STORE_PRESENCA_HOJE, arr || []);
+    }
+
+    function refreshCounts(){
+      const h = getHoje();
+      $("countHoje").textContent = String(h.length);
+    }
+
+    function addPresenca(p){
+      const hoje = getHoje();
+      if(hoje.some(x=>x.id === p.id)) return;
+
+      hoje.push({
+        id: p.id,
+        apelido: upper(p.apelido),
+        hora: nowHHMM(),
+        obs: "",
+        naoVaiJogar: false
+      });
+      // ordem = chegada
+      setHoje(hoje);
+      renderHoje();
+    }
+
+    function removePresenca(id){
+      const hoje = getHoje().filter(x=>x.id !== id);
+      setHoje(hoje);
+      renderHoje();
+    }
+
+    function toggleNaoVai(id){
+      const hoje = getHoje();
+      hoje.forEach(x=>{
+        if(x.id === id) x.naoVaiJogar = !x.naoVaiJogar;
+      });
+      setHoje(hoje);
+      renderHoje();
+    }
+
+    function renderPlayers(){
+      const players = loadPlayers().sort((a,b)=> upper(a.apelido).localeCompare(upper(b.apelido)));
+      const body = $("playersBody");
+      body.innerHTML = "";
+
+      if(players.length === 0){
+        body.innerHTML = `<tr><td colspan="3">Nenhum jogador no painel JOGADORES ainda.</td></tr>`;
+        return;
+      }
+
+      players.forEach(p=>{
+        const tr = document.createElement("tr");
+
+        const td1 = document.createElement("td");
+        td1.textContent = p.id || "";
+        tr.appendChild(td1);
+
+        const td2 = document.createElement("td");
+        td2.textContent = upper(p.apelido);
+        tr.appendChild(td2);
+
+        const td3 = document.createElement("td");
+        const b = document.createElement("button");
+        b.className = "btn btn-green";
+        b.style.padding = "6px 10px";
+        b.style.fontSize = "11px";
+        b.textContent = "CHEGOU AGORA";
+        b.addEventListener("click", ()=>addPresenca(p));
+        td3.appendChild(b);
+        tr.appendChild(td3);
+
+        body.appendChild(tr);
+      });
+    }
+
+    function renderHoje(){
+      const hoje = getHoje();
+      const body = $("hojeBody");
+      body.innerHTML = "";
+
+      if(hoje.length === 0){
+        body.innerHTML = `<tr><td colspan="7">Presença vazia.</td></tr>`;
+        refreshCounts();
+        return;
+      }
+
+      hoje.forEach((x, idx)=>{
+        const tr = document.createElement("tr");
+
+        const td1 = document.createElement("td"); td1.textContent = x.id; tr.appendChild(td1);
+        const td2 = document.createElement("td"); td2.textContent = String(idx+1); tr.appendChild(td2);
+        const td3 = document.createElement("td"); td3.textContent = upper(x.apelido); tr.appendChild(td3);
+        const td4 = document.createElement("td"); td4.textContent = x.hora || ""; tr.appendChild(td4);
+
+        const td5 = document.createElement("td");
+        const inpObs = document.createElement("input");
+        inpObs.value = x.obs || "";
+        inpObs.style.width = "100%";
+        inpObs.addEventListener("change", ()=>{
+          const h = getHoje();
+          h.forEach(it=>{ if(it.id===x.id) it.obs = inpObs.value; });
+          setHoje(h);
+        });
+        td5.appendChild(inpObs);
+        tr.appendChild(td5);
+
+        const td6 = document.createElement("td");
+        const bNV = document.createElement("button");
+        bNV.className = "btn " + (x.naoVaiJogar ? "btn-red" : "btn-blue");
+        bNV.style.padding = "6px 10px";
+        bNV.style.fontSize = "11px";
+        bNV.textContent = x.naoVaiJogar ? "NÃO VAI" : "VAI JOGAR";
+        bNV.addEventListener("click", ()=>toggleNaoVai(x.id));
+        td6.appendChild(bNV);
+        tr.appendChild(td6);
+
+        const td7 = document.createElement("td");
+        const bX = document.createElement("button");
+        bX.className = "btn btn-red";
+        bX.style.padding = "6px 10px";
+        bX.style.fontSize = "11px";
+        bX.textContent = "EXCLUIR";
+        bX.addEventListener("click", ()=>removePresenca(x.id));
+        td7.appendChild(bX);
+        tr.appendChild(td7);
+
+        body.appendChild(tr);
+      });
+
+      refreshCounts();
+    }
+
+    // =========================
+    // ESCALAÇÃO (estrutura pronta, regras completas depois)
+    // =========================
+    function clearTableBody(tbodyId, rows){
+      const tb = $(tbodyId);
+      tb.innerHTML = "";
+      for(let i=1;i<=rows;i++){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${i}</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        `;
+        tb.appendChild(tr);
+      }
+    }
+
+    function renderEscPlaceholder(){
+      clearTableBody("t1", 10);
+      clearTableBody("t2", 10);
+    }
+
+    function setStatus(msg){
+      $("status").textContent = msg || "";
+    }
+
+    // PRINT helpers
+    function printHTML(title, html){
+      const stamp = new Date().toLocaleString("pt-BR");
+      $("printArea").innerHTML = `
+        <div style="margin-bottom:10px;">
+          <div style="font-size:12px;color:#111;">${stamp}</div>
+          <h1 style="margin:0;font-size:18px;">${title}</h1>
+        </div>
+        ${html}
+      `;
+      window.print();
+      setTimeout(()=>{ $("printArea").innerHTML=""; }, 600);
+    }
+
+    // =========================
+    // BOTÕES
+    // =========================
+    $("btnLimpar").addEventListener("click", ()=>{
+      if(!confirm("Limpar presença de hoje?")) return;
+      setHoje([]);
+      renderHoje();
+      setStatus("Presença limpa.");
+    });
+
+    $("btnEscalar1").addEventListener("click", ()=>{
+      // por enquanto só marca que foi feito (estrutura)
+      saveJSON(STORE_ESC_1, { ok:true, data:new Date().toISOString() });
+      setStatus("1º tempo (estrutura) marcado. Regras completas virão depois.");
+    });
+
+    $("btnDesfazer1").addEventListener("click", ()=>{
+      localStorage.removeItem(STORE_ESC_1);
+      setStatus("1º tempo desfeito.");
+    });
+
+    $("btnEscalar2").addEventListener("click", ()=>{
+      saveJSON(STORE_ESC_2, { ok:true, data:new Date().toISOString() });
+      setStatus("2º tempo (estrutura) marcado. Regras completas virão depois.");
+    });
+
+    $("btnDesfazer2").addEventListener("click", ()=>{
+      localStorage.removeItem(STORE_ESC_2);
+      setStatus("2º tempo desfeito.");
+    });
+
+    $("btnSalvar").addEventListener("click", ()=>{
+      setStatus("SALVAR: estrutura pronta. (As gravações completas vêm na fase de revisão.)");
+    });
+
+    $("btnPdfPresenca").addEventListener("click", ()=>{
+      const h = getHoje();
+      const rows = h.map((x,i)=>`
+        <tr>
+          <td>${x.id}</td>
+          <td>${i+1}</td>
+          <td>${upper(x.apelido)}</td>
+          <td>${x.hora||""}</td>
+          <td>${(x.obs||"")}</td>
+          <td>${x.naoVaiJogar ? "NÃO VAI" : ""}</td>
+        </tr>
+      `).join("");
+
+      const html = `
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>ORDEM</th><th>APELIDO</th><th>HORA</th><th>OBS</th><th>NÃO VAI JOGAR</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows || `<tr><td colspan="6">Vazio</td></tr>`}
+          </tbody>
+        </table>
+      `;
+      printHTML("PRESENÇA - HOJE", html);
+    });
+
+    $("btnPdf1").addEventListener("click", ()=>{
+      printHTML("ESCALAÇÃO - 1º TEMPO", $("tbl1").outerHTML);
+    });
+    $("btnPdf2").addEventListener("click", ()=>{
+      printHTML("ESCALAÇÃO - 2º TEMPO", $("tbl2").outerHTML);
+    });
+
+    // =========================
+    // INICIAR
+    // =========================
+    renderPlayers();
+    renderHoje();
+    renderEscPlaceholder();
+  </script>
 </body>
 </html>
